@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 // Rate limit : 1 site par IP toutes les 24h
 const limiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000,
-  max: 1,
+  max: 50,
   message: "🎯 Un seul site peut être créé par jour depuis votre IP."
 });
 app.use(limiter);
