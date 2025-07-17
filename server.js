@@ -42,7 +42,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // GET Form
-app.get('/', (req, res) => res.render('index'));
+app.get('/create', (req, res) => res.render('index'));
 
 // POST Generate
 app.post('/generate', upload.fields([
