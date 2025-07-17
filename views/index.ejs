@@ -2,25 +2,154 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Créer ton site personnalisé</title>
+  <title>🛠️ Générateur de site stylé</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(-45deg, #0f0f0f, #1a1a1a, #222222, #121212);
+      background-size: 400% 400%;
+      animation: gradientBG 10s ease infinite;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    @keyframes gradientBG {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
+    .form-container {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      padding: 2rem 3rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 0 20px rgba(0,255,255,0.2);
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      color: #00ffe1;
+      text-shadow: 0 0 8px #00ffe1;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+
+    input[type="text"],
+    input[type="url"],
+    input[type="file"],
+    textarea {
+      width: 100%;
+      padding: 0.6rem 1rem;
+      border-radius: 0.5rem;
+      border: none;
+      background: rgba(255,255,255,0.08);
+      color: white;
+      outline: none;
+      transition: 0.3s ease;
+    }
+
+    input[type="text"]:focus,
+    input[type="url"]:focus,
+    textarea:focus {
+      box-shadow: 0 0 5px #00ffe1;
+    }
+
+    button {
+      margin-top: 1.5rem;
+      width: 100%;
+      padding: 0.8rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      background: #00ffe1;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background: white;
+      color: #00ffe1;
+    }
+
+    .tip {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: #888;
+      text-align: center;
+    }
+
+  </style>
 </head>
-<body style="background:black;color:white;">
-  <h1>🎨 Générateur de site</h1>
-  <form action="/generate" method="POST" enctype="multipart/form-data">
-    <input type="text" name="username" placeholder="Nom d'utilisateur" required><br>
-    <input type="text" name="emoji" placeholder="Emoji" required><br>
-    <input type="text" name="bio" placeholder="Bio" required><br>
-    <input type="text" name="uid" placeholder="UID (sera incrémenté)" required><br>
-    <input type="text" name="tiktok" placeholder="TikTok handle" required><br>
-    <input type="text" name="shop" placeholder="Description TikTok" required><br>
-    <input type="url" name="discordUrl" placeholder="Lien vers Discord" required><br><br>
+<body>
+  <div class="form-container">
+    <h1>✨ Génère ton site stylé</h1>
+    <form action="/generate" method="POST" enctype="multipart/form-data">
+      <label>Image de profil (.jpg, .png)</label>
+      <input type="file" name="profile" accept="image/*" required>
 
-    Photo de profil: <input type="file" name="profileImage" accept="image/*" required><br>
-    Audio (mp3): <input type="file" name="audioFile" accept="audio/mp3" required><br>
-    Vidéo (mp4/mov): <input type="file" name="videoFile" accept="video/mp4,video/mov" required><br>
-    Logo Discord: <input type="file" name="discordLogo" accept="image/*" required><br><br>
+      <label>Audio (.mp3)</label>
+      <input type="file" name="audio" accept=".mp3" required>
 
-    <button type="submit">Générer mon site</button>
-  </form>
+      <label>Vidéo de fond (.mp4)</label>
+      <input type="file" name="video" accept=".mp4,.mov" required>
+
+      <label>Nom d'utilisateur</label>
+      <input type="text" name="username" placeholder="Ton blaze ici" required>
+
+      <label>Emoji unique (ex: 💎)</label>
+      <input type="text" name="emoji" maxlength="2" required>
+
+      <label>Bio / description courte</label>
+      <textarea name="bio" rows="2" placeholder="Décris-toi en quelques mots..." required></textarea>
+
+      <label>Surnom TikTok</label>
+      <input type="text" name="nickname" placeholder="@pseudonyme">
+
+      <label>Description TikTok (petit texte sous le nom)</label>
+      <input type="text" name="nickdesc" placeholder="ex: artiste digital">
+
+      <label>Lien externe (Discord, autre...)</label>
+      <input type="url" name="link" placeholder="https://...">
+
+      <label>Logo du lien (image .jpg/.png)</label>
+      <input type="file" name="logo" accept="image/*">
+
+      <button type="submit">🚀 Générer mon site</button>
+      <div class="tip">Ton site sera hébergé avec une URL unique</div>
+    </form>
+  </div>
 </body>
 </html>
