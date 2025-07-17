@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>moum</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: black;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        /* Entry screen */
+        #entry-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            cursor: pointer;
+            transition: opacity 1s ease-in-out;
+        }
+        
+        /* Main content */
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Video background */
+        #video-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.5;
+            filter: grayscale(100%);
+        }
+        
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Content */
+        .content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        /* Profile section */
+        .profile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            max-width: 400px;
+        }
+        
+        .profile-image-container {
+            position: relative;
+            width: 96px;
+            height: 96px;
+        }
+        
+        .profile-image {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .profile-decoration {
+            position: absolute;
+            top: -16px;
+            right: -16px;
+            width: 128px;
+            height: 128px;
+            object-fit: contain;
+        }
+        
+        .uid {
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+        
+        .username-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .username {
+            font-size: 1.875rem;
+            font-weight: 700;
+        }
+        
+        .diamond {
+            font-size: 1.5rem;
+            color: #9ca3af;
+        }
+        
+        .badge {
+            height: 24px;
+        }
+        
+        .tagline {
+            font-size: 1.125rem;
+            font-style: italic;
+            letter-spacing: 0.05em;
+        }
+        
+        .tiktok {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        
+        .tiktok-image {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .dot {
+            color: #ef4444;
+        }
+        
+        .shop {
+            color: #9ca3af;
+        }
+        
+        /* Discord button */
+        .discord-button {
+            margin-top: 1.5rem;
+            position: relative;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+        
+        .discord-button:hover {
+            transform: scale(1.1);
+        }
+        
+        .discord-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 0.75rem;
+            transition: background-color 0.3s ease;
+        }
+        
+        .discord-button:hover .discord-icon {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* View counter */
+        .view-counter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #9ca3af;
+            margin-top: 1rem;
+        }
+        
+        /* Audio control */
+        .audio-control {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 20;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .audio-control:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .fade-in {
+            animation: fadeIn 1s ease-in-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <!-- Entry Screen -->
+    <div id="entry-screen">
+        <div class="entry-text">click to enter...</div>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Video Background -->
+        <video id="video-bg" autoplay loop muted playsinline>
+            <source src="https://r2.guns.lol/767b91b6-25e6-4de1-a5e2-a1235504bc95.mp4" type="video/mp4">
+        </video>
+        <div class="overlay"></div>
+        
+        <!-- Audio -->
+        <audio id="background-audio" loop>
+            <source src="https://r2.guns.lol/767b91b6-25e6-4de1-a5e2-a1235504bc95.mp4" type="audio/mp4">
+        </audio>
+        
+        <!-- Audio Control Button -->
+        <button class="audio-control" id="audio-control">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+                <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
+                <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+        </button>
+        
+        <!-- Content -->
+        <div class="content">
+            <div class="profile">
+                <!-- Profile Image and Decoration -->
+                <div class="profile-image-container">
+                    <img src="https://cdn.discordapp.com/avatars/1269906993125003297/c8f57743f195c0b3e3911526c868ef41.webp" alt="Profile" class="profile-image">
+                    <img src="https://cdn.discordapp.com/avatar-decoration-presets/a_8ffa2ba9bff18e96b76c2e66fd0d7fa3.png" alt="Avatar Decoration" class="profile-decoration">
+                </div>
+                
+                <p class="uid">UID: 286,873</p>
+                
+                <!-- Username with Diamond and Badges -->
+                <div class="username-container">
+                    <h1 class="username">moum</h1>
+                    <span class="diamond">💎</span>
+                    <img src="https://cdn.discordapp.com/attachments/1255692212717752513/1332489266814783530/roblox-verified-verified.gif" alt="Verified Badge" class="badge">
+                    <img src="https://cdn.discordapp.com/attachments/1255692212717752513/1335303373431373874/black-world.gif" alt="World Badge" class="badge">
+                </div>
+                
+                <p class="tagline">MOUM LOVES YOU</p>
+                
+                <!-- TikTok Handle -->
+                <div class="tiktok">
+                    <img src="https://cdn.discordapp.com/avatars/1269906993125003297/c8f57743f195c0b3e3911526c868ef41.webp" alt="TikTok" class="tiktok-image">
+                    <span>mouumm</span>
+                    <span class="dot">•</span>
+                    <span class="shop">Shop: gg/3G4</span>
+                </div>
+                
+                <!-- Discord Button -->
+                <a href="https://discord.com/users/1269906993125003297" class="discord-button" id="discord-link" target="_blank" rel="noopener noreferrer">
+                    <img src="https://cdn.discordapp.com/attachments/1255692212717752513/1337958933029191732/ec08b212-911e-4858-8f9c-50e7aae76350.webp" alt="Discord" class="discord-icon">
+                </a>
+                
+                <!-- View Counter -->
+                <div class="view-counter">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span id="view-count">166</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Entry screen functionality
+        const entryScreen = document.getElementById('entry-screen');
+        const audioElement = document.getElementById('background-audio');
+        const audioControl = document.getElementById('audio-control');
+        const discordLink = document.getElementById('discord-link');
+        const viewCount = document.getElementById('view-count');
+        
+        // Handle entry screen click
+        entryScreen.addEventListener('click', () => {
+            entryScreen.style.opacity = '0';
+            setTimeout(() => {
+                entryScreen.style.display = 'none';
+            }, 1000);
+        });
+        
+        // Audio control
+        let isMuted = true;
+        
+        audioControl.addEventListener('click', () => {
+            isMuted = !isMuted;
+            
+            if (isMuted) {
+                audioElement.pause();
+                audioControl.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                        <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
+                        <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                `;
+            } else {
+                audioElement.play();
+                audioControl.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                `;
+            }
+        });
+        
+        // Increment view count when Discord link is clicked
+        discordLink.addEventListener('click', () => {
+            const currentCount = parseInt(viewCount.textContent);
+            viewCount.textContent = currentCount + 1;
+            
+            // Store the updated count in localStorage
+            localStorage.setItem('viewCount', currentCount + 1);
+        });
+        
+        // Load view count from localStorage if available
+        document.addEventListener('DOMContentLoaded', () => {
+            const storedCount = localStorage.getItem('viewCount');
+            if (storedCount) {
+                viewCount.textContent = storedCount;
+            }
+        });
+    </script>
+</body>
+</html>
+
