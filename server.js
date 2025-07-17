@@ -58,31 +58,37 @@ app.post('/generate', upload.fields([
   { name: 'videoFile' },
   { name: 'discordLogo' }
 ]), async (req, res) => {
-  const { username, emoji, bio, uid, tiktok, shop, discordUrl } = req.body;
-  const files = req.files;
-  const tmpl = fs.readFileSync('template/index.html', 'utf-8');
+  try {
+    const { username, emoji, bio, uid, tiktok, shop, discordUrl } = req.body;
+    const files = req.files;
 
-  const html = tmpl
-    .replace(/a remplir photo de profil jpg etc\.\.\./g, '/uploads/' + files.profileImage[0].filename)
-    .replace(/a replir la meme pdp que en haut/g, '/uploads/' + files.profileImage[0].filename)
-    .replace(/a remplir audio mp3/g, '/uploads/' + files.audioFile[0].filename)
-    .replace(/a remplir video mp4 ou mov/g, '/uploads/' + files.videoFile[0].filename)
-    .replace(/a remplir logo url/g, '/uploads/' + files.discordLogo[0].filename)
-    .replace(/a remplir nom d'utilisateur/g, username)
-    .replace(/a remplir emoji 1 seul autorisé et que des emoji/g, emoji)
-    .replace(/a remplir bio/g, bio)
-    .replace(/UID: 000,001/g, 'UID: ' + uid)
-    .replace(/a remplir surnom/g, tiktok)
-    .replace(/a remplir description surnom/g, shop)
-    .replace(/a replir url https/g, discordUrl);
+    const tmpl = fs.readFileSync('template/index.html', 'utf-8');
 
-  const site = await Site.create({
-    htmlContent: html,
-    uid: parseInt(uid),
-    ownerIP: req.ip
-  });
+    const html = tmpl
+      .replace(/a remplir photo de profil jpg etc\.\.\./, '/uploads/' + files.profileImage[0].filename)
+      .replace(/a replir la meme pdp que en haut/, '/uploads/' + files.profileImage[0].filename)
+      .replace(/a remplir audio mp3/, '/uploads/' + files.audioFile[0].filename)
+      .replace(/a remplir video mp4 ou mov/, '/uploads/' + files.videoFile[0].filename)
+      .replace(/a remplir logo url/, '/uploads/' + files.discordLogo[0].filename)
+      .replace(/a remplir nom d'utilisateur/, username)
+      .replace(/a remplir emoji 1 seul autorisé et que des emoji/, emoji)
+      .replace(/a remplir bio/, bio)
+      .replace(/UID: 000,001/, 'UID: ' + uid)
+      .replace(/a remplir surnom/, tiktok)
+      .replace(/a remplir description surnom/, shop)
+      .replace(/a replir url https/, discordUrl);
 
-  res.redirect(`/site/${site._id}`);
+    const site = await Site.create({
+      htmlContent: html,
+      uid: parseInt(uid),
+      ownerIP: req.ip
+    });
+
+    res.redirect(`/site/${site._id}`);
+  } catch (err) {
+    console.error("❌ ERREUR POST /generate :", err);
+    res.status(500).send("Erreur lors de la génération du site. Regarde les logs serveur.");
+  }
 });
 
 // 🌐 GET /site/:id — Afficher un site généré
