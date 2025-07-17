@@ -336,13 +336,20 @@ entryScreen.addEventListener('click', () => {
         entryScreen.style.display = 'none';
     }, 1000);
 
-    // Lancer l'audio à la première interaction utilisateur
+    // ▶️ Démarrer l'audio
     audioElement.play().catch(e => {
-        console.warn("Autoplay bloqué : ", e);
+        console.warn("Autoplay audio bloqué :", e);
     });
     isMuted = false;
 
-    // Changer l'icône en mode "audio activé"
+    // ▶️ Démarrer la vidéo avec son
+    const video = document.getElementById('video-bg');
+    video.muted = true;
+    video.play().catch(e => {
+        console.warn("Autoplay vidéo bloqué :", e);
+    });
+
+    // 🔊 Mettre à jour l'icône du bouton audio
     audioControl.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
