@@ -33,7 +33,7 @@ const Site = mongoose.model('Site', new mongoose.Schema({
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
-app.set('view engine', 'ejs');
+app.use(express.static('views'));
 
 // Multer config
 const storage = multer.diskStorage({
@@ -49,8 +49,7 @@ app.get('/', (req, res) => {
 });
 
 // 🆕 Route pour afficher le formulaire de création
-app.get('/create', (req, res) => {
-  res.render('index');
+app.get('/', (req, res) => res.render('index'));
 });
 
 // 🚀 POST /generate — Génération du site
