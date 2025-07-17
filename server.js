@@ -50,7 +50,6 @@ app.get('/', (req, res) => {
 
 // 🆕 Route pour afficher le formulaire de création
 app.get('/', (req, res) => res.render('index'));
-});
 
 // 🚀 POST /generate — Génération du site
 app.post('/generate', upload.fields([
