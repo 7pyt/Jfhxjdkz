@@ -1,67 +1,62 @@
-require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
-const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
-const { v4: uuidv4 } = require('uuid');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+app.set('trust proxy', 1); // Pour Render ou tout reverse proxy
 
-// Rate limit: 1 site per IP per day
-const limiter = rateLimit({
-  windowMs: 24 * 60 * 60 * 1000,
-  max: 50,
-  message: "🎯 Un seul site peut être créé par jour depuis votre IP."
-});
-app.set('trust proxy', 1); 
-app.use(limiter);
+// 📂 Assure les dossiers existent
+if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
+if (!fs.existsSync('sites')) fs.mkdirSync('sites');
 
-// MongoDB connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB connecté"))
-  .catch(err => console.error("❌ Erreur MongoDB :", err));
-
-// Mongoose schema
-const Site = mongoose.model('Site', new mongoose.Schema({
-  htmlContent: String,
-  uid: Number,
-  ownerIP: String,
-  createdAt: { type: Date, default: Date.now }
-}));
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
-
-// Multer configuration
+// 📤 Configuration Multer
 const storage = multer.diskStorage({
-  destination: 'public/uploads/',
-  filename: (_, file, cb) =>
-    cb(null, uuidv4() + path.extname(file.originalname))
+  destination: (req, file, cb) => cb(null, 'uploads/'),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${Date.now()}-${file.fieldname}${ext}`);
+  }
 });
 const upload = multer({ storage });
+const cpUpload = upload.fields([
+  { name: 'profileImage', maxCount: 1 },
+  { name: 'audioFile', maxCount: 1 },
+  { name: 'videoFile', maxCount: 1 },
+  { name: 'discordLogo', maxCount: 1 }
+]);
 
-// Route pour afficher le formulaire HTML
-app.get('/create', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'index.html'));
+// 🔒 Limite à 50 sites par jour (par IP)
+const createLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000, // 24h
+  max: 50,
+  message: '❌ Limite atteinte : vous ne pouvez créer que 50 sites par jour.'
 });
 
-// Route POST pour générer un site
-app.post('/generate', upload.fields([
-  { name: 'profileImage' },
-  { name: 'audioFile' },
-  { name: 'videoFile' },
-  { name: 'discordLogo' }
-]), async (req, res) => {
+// 🗂 Middleware statique
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/sites', express.static(path.join(__dirname, 'sites')));
+
+// 📄 Chargement de la template
+const baseTemplate = fs.readFileSync('template.html', 'utf8');
+
+// 🛠 Route POST de création avec limite
+app.post('/create', createLimiter, cpUpload, (req, res) => {
   try {
-    const { username, emoji, bio, uid, tiktok, shop, discordUrl } = req.body;
     const files = req.files;
+    const {
+      username,
+      emoji,
+      bio,
+      tiktok,
+      shop,
+      discordUrl
+    } = req.body;
 
-    const tmpl = fs.readFileSync('template/index.html', 'utf-8');
+    const uid = Math.floor(Math.random() * 100000);
 
-    const html = tmpl
+    const html = baseTemplate
       .replace(/a remplir photo de profil jpg etc\.+/, '/uploads/' + files.profileImage[0].filename)
       .replace(/a replir la meme pdp que en haut/, '/uploads/' + files.profileImage[0].filename)
       .replace(/a remplir audio mp3/, '/uploads/' + files.audioFile[0].filename)
@@ -75,31 +70,17 @@ app.post('/generate', upload.fields([
       .replace(/a remplir description surnom/, shop)
       .replace(/a replir url https/, discordUrl);
 
-    const site = await Site.create({
-      htmlContent: html,
-      uid: parseInt(uid),
-      ownerIP: req.ip
-    });
+    const outputPath = path.join(__dirname, 'sites', `site-${uid}.html`);
+    fs.writeFileSync(outputPath, html);
 
-    console.log("✅ Site créé avec ID :", site._id);
-    res.redirect(`/site/${site._id}`);
+    res.redirect(`/sites/site-${uid}.html`);
   } catch (err) {
-    console.error("❌ ERREUR POST /generate :", err);
-    res.status(500).send("Erreur lors de la génération du site.");
+    console.error('Erreur lors de la création du site :', err);
+    res.status(500).send('Erreur serveur.');
   }
 });
 
-// Route pour accéder à un site par ID
-app.get('/site/:id', async (req, res) => {
-  try {
-    const site = await Site.findById(req.params.id);
-    if (!site) return res.status(404).send("🚫 Site introuvable.");
-    res.send(site.htmlContent);
-  } catch (err) {
-    res.status(500).send("❌ Erreur serveur.");
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur actif sur http://localhost:${PORT}`);
+// 🚀 Lancement du serveur
+app.listen(process.env.PORT || 3000, () => {
+  console.log('✅ Serveur démarré sur le port 3000');
 });
