@@ -41,7 +41,11 @@ app.use('/sites', express.static(path.join(__dirname, 'sites')));
 // 📄 Chargement de la template
 const baseTemplate = fs.readFileSync(path.join(__dirname, 'template.html'), 'utf8');
 
-// 🛠 Route POST de création avec limite
+app.get('/create', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
+
+  // 🛠 Route POST de création avec limite
 app.post('/create', createLimiter, cpUpload, (req, res) => {
   try {
     const files = req.files;
