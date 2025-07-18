@@ -10,7 +10,7 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 🛡️ Rate limit : 50 créations max par IP par jour
+// Rate limit: 1 site per IP per day
 const limiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000,
   max: 50,
@@ -18,12 +18,12 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// 🧩 MongoDB
+// MongoDB connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connecté"))
   .catch(err => console.error("❌ Erreur MongoDB :", err));
 
-// 🧠 Schéma
+// Mongoose schema
 const Site = mongoose.model('Site', new mongoose.Schema({
   htmlContent: String,
   uid: Number,
@@ -31,30 +31,23 @@ const Site = mongoose.model('Site', new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 }));
 
-// 📦 Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
 
-// 📁 Multer config
+// Multer configuration
 const storage = multer.diskStorage({
   destination: 'public/uploads/',
-  filename: (_, file, cb) => cb(null, uuidv4() + path.extname(file.originalname))
+  filename: (_, file, cb) =>
+    cb(null, uuidv4() + path.extname(file.originalname))
 });
 const upload = multer({ storage });
 
-// 🏠 Accueil
-app.get('/', (req, res) => {
-  res.send('<h1>Bienvenue sur le générateur de site</h1><a href="/create">Créer mon site</a>');
-});
-
-// 📝 Formulaire de création
+// Route pour afficher le formulaire HTML
 app.get('/create', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
 
-// 🚀 POST /generate — Générer un site personnalisé
+// Route POST pour générer un site
 app.post('/generate', upload.fields([
   { name: 'profileImage' },
   { name: 'audioFile' },
@@ -68,7 +61,7 @@ app.post('/generate', upload.fields([
     const tmpl = fs.readFileSync('template/index.html', 'utf-8');
 
     const html = tmpl
-      .replace(/a remplir photo de profil jpg etc\.\.\./, '/uploads/' + files.profileImage[0].filename)
+      .replace(/a remplir photo de profil jpg etc\.+/, '/uploads/' + files.profileImage[0].filename)
       .replace(/a replir la meme pdp que en haut/, '/uploads/' + files.profileImage[0].filename)
       .replace(/a remplir audio mp3/, '/uploads/' + files.audioFile[0].filename)
       .replace(/a remplir video mp4 ou mov/, '/uploads/' + files.videoFile[0].filename)
@@ -87,15 +80,15 @@ app.post('/generate', upload.fields([
       ownerIP: req.ip
     });
 
-    console.log("✅ Site généré :", site._id);
+    console.log("✅ Site créé avec ID :", site._id);
     res.redirect(`/site/${site._id}`);
   } catch (err) {
     console.error("❌ ERREUR POST /generate :", err);
-    res.status(500).send("Erreur lors de la génération du site. Regarde les logs serveur.");
+    res.status(500).send("Erreur lors de la génération du site.");
   }
 });
 
-// 🌐 Affichage du site
+// Route pour accéder à un site par ID
 app.get('/site/:id', async (req, res) => {
   try {
     const site = await Site.findById(req.params.id);
@@ -106,7 +99,6 @@ app.get('/site/:id', async (req, res) => {
   }
 });
 
-// 🚀 Serveur actif
 app.listen(PORT, () => {
-  console.log(`🚀 Serveur en ligne : http://localhost:${PORT}`);
+  console.log(`🚀 Serveur actif sur http://localhost:${PORT}`);
 });
