@@ -10,7 +10,7 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Rate limit : 1 site par IP toutes les 24h
+// 🛡️ Rate limit : 50 créations max par IP par jour
 const limiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000,
   max: 50,
@@ -18,12 +18,12 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// MongoDB
+// 🧩 MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connecté"))
   .catch(err => console.error("❌ Erreur MongoDB :", err));
 
-// Schéma MongoDB
+// 🧠 Schéma
 const Site = mongoose.model('Site', new mongoose.Schema({
   htmlContent: String,
   uid: Number,
@@ -31,27 +31,30 @@ const Site = mongoose.model('Site', new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 }));
 
+// 📦 Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
-app.use(express.static('views'));
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
-// Multer config
+// 📁 Multer config
 const storage = multer.diskStorage({
   destination: 'public/uploads/',
-  filename: (_, file, cb) =>
-    cb(null, uuidv4() + path.extname(file.originalname))
+  filename: (_, file, cb) => cb(null, uuidv4() + path.extname(file.originalname))
 });
 const upload = multer({ storage });
 
-// 🏠 Route d’accueil (optionnelle, personnalisable)
+// 🏠 Accueil
 app.get('/', (req, res) => {
   res.send('<h1>Bienvenue sur le générateur de site</h1><a href="/create">Créer mon site</a>');
 });
 
-// 🆕 Route pour afficher le formulaire de création
-app.get('/', (req, res) => res.render('index'));
+// 📝 Formulaire de création
+app.get('/create', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
 
-// 🚀 POST /generate — Génération du site
+// 🚀 POST /generate — Générer un site personnalisé
 app.post('/generate', upload.fields([
   { name: 'profileImage' },
   { name: 'audioFile' },
@@ -84,6 +87,7 @@ app.post('/generate', upload.fields([
       ownerIP: req.ip
     });
 
+    console.log("✅ Site généré :", site._id);
     res.redirect(`/site/${site._id}`);
   } catch (err) {
     console.error("❌ ERREUR POST /generate :", err);
@@ -91,7 +95,7 @@ app.post('/generate', upload.fields([
   }
 });
 
-// 🌐 GET /site/:id — Afficher un site généré
+// 🌐 Affichage du site
 app.get('/site/:id', async (req, res) => {
   try {
     const site = await Site.findById(req.params.id);
@@ -102,7 +106,7 @@ app.get('/site/:id', async (req, res) => {
   }
 });
 
-// ✅ Démarrer le serveur
+// 🚀 Serveur actif
 app.listen(PORT, () => {
-  console.log(`🚀 Serveur actif sur http://localhost:${PORT}`);
+  console.log(`🚀 Serveur en ligne : http://localhost:${PORT}`);
 });
