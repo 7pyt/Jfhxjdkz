@@ -16,6 +16,7 @@ const limiter = rateLimit({
   max: 50,
   message: "🎯 Un seul site peut être créé par jour depuis votre IP."
 });
+app.set('trust proxy', 1); 
 app.use(limiter);
 
 // MongoDB connection
